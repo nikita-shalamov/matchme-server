@@ -110,8 +110,8 @@ routerPhoto.post(
   async (req, res) => {
     try {
 		const token = config.get('TOKEN')
-		const telegramId = 5328560635
-		const limit = req.body.limit;
+		const telegramId = req.body.limit
+		const limit = req.body.limit
 		let allFiles;
 		if (limit != 0) {
 			allFiles = await axios.get(`https://api.telegram.org/bot${token}/getUserProfilePhotos?user_id=${telegramId}&limit=${limit}`)
