@@ -30,10 +30,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 app.use(express.json());
-app.use('/api', routerPhoto);
-app.use('/api', routerAuth);
-app.use('/api', routerTest);
-app.use('/api', routerRegister);
+app.use(routerPhoto);
+app.use(routerAuth);
+app.use(routerTest);
+app.use(routerRegister);
 app.use('/uploads', express.static(uploadDir));
 
 const PORT = config.get('PORT') || 3000
