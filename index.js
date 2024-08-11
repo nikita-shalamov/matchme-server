@@ -34,15 +34,15 @@ app.use('/api', routerPhoto);
 app.use('/api', routerAuth);
 app.use('/api', routerTest);
 app.use('/api', routerRegister);
-app.use('/uploads', express.static(uploadDir));
+app.use('/upload', express.static(uploadDir));
 
 const PORT = config.get('PORT') || 3000
 
-app.get('/',
+app.get('/api',
     async (req, res) => {
-        // const data = await User.find()
+        const data = await User.find()
         // await User.deleteMany()
-        const data = {message: 'успешно'}
+        // const data = {message: 'успешно'}
         res.send(`
             <html>
                 <head><title>Server</title></head>

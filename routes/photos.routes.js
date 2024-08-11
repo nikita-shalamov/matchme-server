@@ -22,7 +22,7 @@ if (!fs.existsSync(uploadDir)) {
 // Настройка хранилища для Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Папка для сохранения изображений
+    cb(null, uploadDir); // Папка для сохранения изображений
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + '-' + Math.floor(Math.random() * 10000) + path.extname(file.originalname));
