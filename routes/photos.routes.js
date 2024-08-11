@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 const parentDir = path.dirname(__dirname);
 
 // Убедитесь, что папка 'uploads' существует
-const uploadDir = path.join(__dirname, 'uploads');
+const uploadDir = path.join(parentDir, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
@@ -110,8 +110,11 @@ routerPhoto.post(
   async (req, res) => {
     try {
 		const token = config.get('TOKEN')
-		const telegramId = req.body.limit
+		const telegramId = req.body.telegramId
 		const limit = req.body.limit
+
+    console.log('telegramId and limit', telegramId, limit);
+    
 		let allFiles;
 		if (limit != 0) {
 			allFiles = await axios.get(`https://api.telegram.org/bot${token}/getUserProfilePhotos?user_id=${telegramId}&limit=${limit}`)
@@ -130,25 +133,6 @@ routerPhoto.post(
 				return response.data.result.file_path;
 			})
 		);
-
-		// async function downloadImage(url) {
-        //     const response = await axios.get(url, { responseType: 'arraybuffer' });
-
-        //     const folderPath = path.join(path.dirname(__dirname), 'images')
-        //     const filePath = path.join(folderPath, Date.now() + '-' + Math.floor(Math.random() * 10000) + '.jpg');
-
-        //     if (!fs.existsSync(folderPath)) {
-        //         fs.mkdirSync(folderPath, { recursive: true });
-        //     }
-            
-        //     fs.writeFile(filePath, response.data, (err) => {
-        //       if (err) throw err;
-        //       console.log('Image downloaded successfully!');
-        //     });
-        // }
-
-
-        // Загружаем файлы и накапливаем их в массиве
         
 		const files = await Promise.all(
             allFilesPaths.map(async (filePath) => {

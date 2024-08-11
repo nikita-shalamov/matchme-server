@@ -41,7 +41,7 @@ const PORT = config.get('PORT') || 3000
 app.get('/api',
     async (req, res) => {
         const data = await User.find()
-        // await User.deleteMany()
+        await User.deleteMany()
         // const data = {message: 'успешно'}
         res.send(`
             <html>

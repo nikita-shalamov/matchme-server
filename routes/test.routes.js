@@ -13,7 +13,9 @@ const parentDir = dirname(__dirname);
 // Настройка хранилища для multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(parentDir, 'uploads/')); // Папка для хранения загруженных файлов
+        cb(null, path.join(parentDir, '/uploads')); // Папка для хранения загруженных файлов
+        console.log('parentDir', parentDir);
+        
     },
     filename: (req, file, cb) => {
         const extension = path.extname(file.originalname);
@@ -30,6 +32,7 @@ routerTest.post('/uploadPhotos', upload.array('files', 10), (req, res) => { // A
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ message: 'Файлы не были загружены' });
     }
+    log
     const fileInfos = req.files.map(file => ({
         filename: file.filename,
         path: `uploads/${file.filename}`
@@ -40,7 +43,7 @@ routerTest.post('/uploadPhotos', upload.array('files', 10), (req, res) => { // A
 // Маршрут для получения файла
 routerTest.get('/download/:filename', (req, res) => {
     const { filename } = req.params;
-    const filePath = path.join(parentDir, '/uploads', filename);
+    const filePath = path.join(parentDir, 'uploads/', filename);
     console.log(__dirname, filePath);
     res.sendFile(filePath);
 });
