@@ -8,6 +8,9 @@ import express from 'express'
 const routerPhoto = Router();
 import config from 'config'
 import axios from 'axios';
+import imagemin from 'imagemin';
+import imageminMozjpeg from 'imagemin-mozjpeg';
+import imageminPngquant from 'imagemin-pngquant';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +34,7 @@ const storage = multer.diskStorage({
 
 // Фильтрация файлов по типу
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
+  const allowedTypes = /jpeg|jpg|png|gif|heic/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
 
@@ -52,11 +55,38 @@ const upload = multer({
 // Маршрут для загрузки и обновления фотографий
 routerPhoto.post('/upload', upload.array('photos', 10), async (req, res) => {
   try {
-    
     const telegramId = req.body.telegramId;
-    
+
     // Получаем пути к загруженным файлам
-    const uploadedFiles = req.files.map(file => file.filename);
+    const uploadedFiles = [];
+
+    for (const file of req.files) {
+      const inputPath = path.join(uploadDir, file.filename);
+      const stats = fs.statSync(inputPath);
+
+      // Проверка размера файла (в байтах)
+      if (stats.size > 300 * 1024) { // 200 КБ
+        // Сжимаем изображение с помощью imagemin
+        const compressed = await imagemin([inputPath], {
+          destination: uploadDir,
+          plugins: [
+            imageminMozjpeg({ quality: 87 }), // Сжатие для JPEG
+            imageminPngquant({ quality: [0.90, 1] }) // Сжатие для PNG
+          ]
+        });
+
+        // Если сжатие прошло успешно, обновляем путь
+        if (compressed && compressed.length > 0) {
+          uploadedFiles.push(path.basename(compressed[0].destinationPath));
+        } else {
+          uploadedFiles.push(file.filename);
+        }
+      } else {
+        // Файл меньше 200 КБ, не сжимаем
+        uploadedFiles.push(file.filename);
+      }
+    }
+
 
     // Найти пользователя по telegramId
     const user = await User.findOne({ telegramId });
@@ -66,10 +96,8 @@ routerPhoto.post('/upload', upload.array('photos', 10), async (req, res) => {
     }
 
     // Удалить старые фотографии
-    console.log(user.photos);
-    
     user.photos.forEach(photo => {
-      const filePath = path.join(parentDir, 'uploads', photo);
+      const filePath = path.join(uploadDir, photo);
       fs.unlink(filePath, err => {
         if (err) console.error(`Ошибка при удалении файла ${photo}:`, err);
       });
@@ -85,6 +113,7 @@ routerPhoto.post('/upload', upload.array('photos', 10), async (req, res) => {
     res.status(500).json({ error: 'Ошибка при загрузке файлов' });
   }
 });
+
 
 // получение фотографий пользователя
 routerPhoto.post('/userPhotos', async (req, res) => {

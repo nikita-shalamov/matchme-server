@@ -17,11 +17,19 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "heic-convert": "^2.1.0",
+    "heic-jpg-exif": "^0.3.5",
+    "heic2any": "^0.0.4",
+    "imagemin": "^9.0.0",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "jimp": "^0.22.12",
     "mongoose": "^8.5.2",
     "multer": "^1.4.5-lts.1",
     "node-telegram-bot-api": "^0.66.0",
     "nodemon": "^3.1.4",
-    "prettyjson": "^1.2.5"
+    "prettyjson": "^1.2.5",
+    "sharp": "^0.33.4"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

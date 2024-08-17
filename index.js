@@ -16,6 +16,8 @@ const { ObjectId } = mongoose.Types;
 import axios from 'axios'
 import { log } from 'console'
 import fs from 'fs'
+import routerLikes from './routes/likes.routes.js'
+import Likes from './models/Likes.js'
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +36,7 @@ app.use('/api', routerPhoto);
 app.use('/api', routerAuth);
 app.use('/api', routerTest);
 app.use('/api', routerRegister);
+app.use('/api', routerLikes);
 app.use('/upload', express.static(uploadDir));
 
 const PORT = config.get('PORT') || 3000
@@ -41,13 +44,16 @@ const PORT = config.get('PORT') || 3000
 app.get('/api',
     async (req, res) => {
         const data = await User.find()
-        await User.deleteMany()
+        const likes = await Likes.find()
+        // await Likes.deleteMany()
+        // await User.deleteOne({telegramId: 7})
         // const data = {message: 'успешно'}
         res.send(`
             <html>
                 <head><title>Server</title></head>
                 <body>
                     <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <pre>${JSON.stringify(likes, null, 2)}</pre>
                 </body>
             </html>
         `);

@@ -59,7 +59,6 @@ routerRegister.post(
     async (req, res) => {
         try {
             const { telegramId } = req.body;
-            
 
             const user = await User.findOne({ telegramId });
 
@@ -86,6 +85,8 @@ routerRegister.post(
         }
     }
 )
+
+
 
 routerRegister.post(
     '/changeUserData',

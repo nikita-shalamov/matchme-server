@@ -32,7 +32,7 @@ routerTest.post('/uploadPhotos', upload.array('files', 10), (req, res) => { // A
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ message: 'Файлы не были загружены' });
     }
-    log
+    
     const fileInfos = req.files.map(file => ({
         filename: file.filename,
         path: `uploads/${file.filename}`
