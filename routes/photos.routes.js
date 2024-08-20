@@ -141,8 +141,6 @@ routerPhoto.post(
 		const token = config.get('TOKEN')
 		const telegramId = req.body.telegramId
 		const limit = req.body.limit
-
-    console.log('telegramId and limit', telegramId, limit);
     
 		let allFiles;
 		if (limit != 0) {

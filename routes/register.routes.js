@@ -110,8 +110,16 @@ routerRegister.post(
     }
 )
 
+routerRegister.get('/getUserId/:telegramId', async (req, res) => {
+    try {
+        const {telegramId} = req.params
+        
+        const user = await User.find({telegramId})
 
-
-
+        res.json({message: 'Пользователь найден', userId: user._id})
+    } catch (e) {
+        res.status(500).json({message: 'Что-то пошло не так'})
+    }
+})
 
 export default routerRegister

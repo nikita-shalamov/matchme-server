@@ -1,6 +1,8 @@
 import { Router } from "express";
 import Likes from "../models/Likes.js";
 import User from "../models/User.js";
+import Rooms from "../models/Rooms.js";
+import Messages from "../models/Messages.js";
 
 
 
@@ -76,13 +78,13 @@ routerLikes.post('/addLike', async (req, res) => {
         // Создаем взаимный лайк и для текущего пользователя
         await Likes.create({ fromUser: fromUserId, toUser: toUserId, isMutual: true });
 
-        return res.json({message: 'Есть взаимный лайк!'})
+        return res.json({message: 'Есть взаимный лайк!', mutual: true})
     } else if (existingLike2) {
         return res.json({message: 'Уже ставили лайк этому пользователю!'});
     } else {
         await Likes.create({ fromUser: fromUserId, toUser: toUserId });
     }
-    res.json({message: 'Лайк поставлен успешно!'})
+    res.json({message: 'Лайк поставлен успешно!', mutual: false})
 })
 
 routerLikes.post('/addDislike', async (req, res) => {
@@ -118,7 +120,6 @@ routerLikes.post('/addDislike', async (req, res) => {
 routerLikes.get('/getMyLikes/:telegramId', async (req, res) => {
     try {
         const { telegramId } = req.params;
-        console.log(telegramId);
 
         // Find the user by telegramId
         const user = await User.findOne({ telegramId }).select('name birthDate');
@@ -127,7 +128,6 @@ routerLikes.get('/getMyLikes/:telegramId', async (req, res) => {
         }
 
         const userId = user._id;
-        console.log(userId);
 
         // Find the likes with populated user data
         const likes = await Likes.find({ toUser: userId, isMutual: false })
@@ -176,6 +176,22 @@ routerLikes.get(
 
             const userId = await User.findOne({telegramId})
 
+            const rooms = await Rooms.find({$or: [{firstUser: userId._id}, {secondUser: userId._id}]})
+            const userChats = []
+            
+            
+            rooms.forEach(async (room) => {
+                const messages = await Messages.find({room: room._id})
+                if (messages.length > 0) {
+                    if (userId._id.toString() === room.firstUser.toString()) {
+                        userChats.push(room.secondUser.toString())
+                    } else {
+                        userChats.push(room.firstUser.toString())
+                    }
+                }
+                
+            })
+
             const matches = await Likes.find({$and: [{$or: [{fromUser: userId._id}, {toUser: userId._id}] }, { isMutual: true }]}).populate('fromUser', 'telegramId name').populate('toUser', 'telegramId name photos')
 
             // Фильтрация для удаления совпадений с обратными пользователями
@@ -187,13 +203,20 @@ routerLikes.get(
                 const key2 = `${match.toUser._id}-${match.fromUser._id}`;
 
                 if (!matchSet.has(key1) && !matchSet.has(key2)) {
-                    uniqueMatches.push(match);
-                    matchSet.add(key1);
+                    if (!userChats.includes(match.fromUser._id.toString()) && !userChats.includes(match.toUser._id.toString())) {
+                        uniqueMatches.push(match);
+                        matchSet.add(key1);
+                    }
+                    
                 }
             });
 
-            res.json({ matches: uniqueMatches });
             
+
+
+            
+
+            res.json({ matches: uniqueMatches });
         } catch(e) {
             return res.status(500).json({ error: 'Ошибка сервера при получении взаимных лайков' });
         }
