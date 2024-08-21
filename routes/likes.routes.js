@@ -22,6 +22,7 @@ routerLikes.post('/getUserProfiles', async (req, res) => {
         
         const userSec = await User.findById(userId).populate('city');
         const userCityId = userSec.city._id;
+        // const userSexId = userSec.sex._id;
 
         // Step 1: Get users from the same city
         const usersFromCity = await User.find({ city: userCityId, _id: { $ne: userId } }).select('_id');
@@ -40,7 +41,7 @@ routerLikes.post('/getUserProfiles', async (req, res) => {
         console.log('usersNotLiked', usersNotLiked);
 
         // Step 4: Find user profiles of those who have not been liked
-        const users = await User.find({ _id: { $in: usersNotLiked } }).populate('city', 'name');
+        const users = await User.find({ _id: { $in: usersNotLiked } }).populate('sex', 'name').populate('city', 'name');
 
         res.status(200).json(users);
     } catch (error) {
