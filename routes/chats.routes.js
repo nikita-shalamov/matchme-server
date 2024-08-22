@@ -97,7 +97,7 @@ routerChats.get('/getChats/:userId', async (req, res) => {
 
             const messages = await Messages.find({ room: room._id }).sort({ createdAt: -1 });
             const lastMessage = messages[messages.length - 1]; 
-
+            const unReadMessages = await Messages.find({ room: room._id, user: {$ne: userId}, isRead: false })
             return {
                 roomId: room._id,
                 anotherUser: {
@@ -106,7 +106,8 @@ routerChats.get('/getChats/:userId', async (req, res) => {
                     telegramId: anotherUser.telegramId,
                     photos: anotherUser.photos[0]
                 },
-                lastMessage: lastMessage
+                lastMessage: lastMessage,
+                unReadMessages: unReadMessages.length
             };
         }));
 
@@ -116,5 +117,17 @@ routerChats.get('/getChats/:userId', async (req, res) => {
         res.status(500).send('Ошибка сервера при поиске чатов');
     }
 })
+
+routerChats.post('/markMessagesAsRead/:roomId', async (req, res) => {
+    const { roomId } = req.params;
+    const { userId } = req.body;
+
+    try {
+        await Messages.updateMany({ room: roomId, user: { $ne: userId }, isRead: false }, { isRead: true });
+        res.status(200).json({ message: 'Сообщения отмечены как прочитанные' });
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка при отметке сообщений о прочтении' });
+    }
+});
 
 export default routerChats

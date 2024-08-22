@@ -14,7 +14,7 @@ import User from './models/User.js'
 import prettyjson from 'prettyjson';
 const { ObjectId } = mongoose.Types;
 import axios from 'axios'
-import { log } from 'console'
+import { count, log } from 'console'
 import fs from 'fs'
 import routerLikes from './routes/likes.routes.js'
 import Likes from './models/Likes.js'
@@ -22,6 +22,7 @@ import routerChats from './routes/chats.routes.js'
 import Rooms from './models/Rooms.js'
 import http from 'http'
 import { Server } from 'socket.io';
+import Messages from './models/Messages.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -78,9 +79,11 @@ const PORT = config.get('PORT') || 3000
 
 app.get('/api',
     async (req, res) => {
+        
         const data = await User.find()
         const likes = await Likes.find()
         const rooms = await Rooms.find()
+        const messages = await Messages.find()
         // await Rooms.deleteOne({secondUser: new mongoose.Types.ObjectId('66c063ddfc87b601e0baf8a6')})
         // await Rooms.deleteMany()
         // await Likes.deleteMany({toUser: new ObjectId('66b9e032f8bc8e44c5789083')})
@@ -94,6 +97,7 @@ app.get('/api',
                     <pre>${JSON.stringify(data, null, 2)}</pre>
                     <pre>${JSON.stringify(likes, null, 2)}</pre>
                     <pre>${JSON.stringify(rooms, null, 2)}</pre>
+                    <pre>${JSON.stringify(messages, null, 2)}</pre>
                 </body>
             </html>
         `);
