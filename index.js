@@ -58,8 +58,6 @@ io.on('connection', (socket) => {
     socket.on('markRead', ({user, room}) => {
         io.to(room).emit('markRead', {user})
     })
-    
-
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
