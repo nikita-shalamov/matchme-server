@@ -50,10 +50,14 @@ io.on('connection', (socket) => {
     });
 
     // сообщение отправляем в комнату определенную
-    socket.on('message', ({ room, message, user, timestamp}) => {
+    socket.on('message', ({ room, message, user, timestamp, isRead}) => {
         console.log(`Получено сообщение: ${message} в комнате: ${room}`);
-        io.to(room).emit('message', { room, message, user, timestamp });
+        io.to(room).emit('message', { room, message, user, timestamp, isRead });
     });
+
+    socket.on('markRead', ({user, room}) => {
+        io.to(room).emit('markRead', {user})
+    })
     
 
     socket.on('disconnect', () => {
@@ -84,12 +88,6 @@ app.get('/api',
         const likes = await Likes.find()
         const rooms = await Rooms.find()
         const messages = await Messages.find()
-        // await Rooms.deleteOne({secondUser: new mongoose.Types.ObjectId('66c063ddfc87b601e0baf8a6')})
-        // await Rooms.deleteMany()
-        // await Likes.deleteMany({toUser: new ObjectId('66b9e032f8bc8e44c5789083')})
-        // await Likes.deleteMany()
-        // await User.deleteOne({telegramId: 7})
-        // const data = {message: 'успешно'}
         res.send(`
             <html>
                 <head><title>Server</title></head>
