@@ -4,8 +4,8 @@ import config from 'config';
 
 dotenv.config();
 
-const token = config.get("TOKEN2");
-const webAppLink = config.get("LINK2");
+const token = config.get("TOKEN");
+const webAppLink = config.get("LINK");
 
 const bot = new TelegramBot(token, { polling: true });
 
