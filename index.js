@@ -23,6 +23,7 @@ import Rooms from './models/Rooms.js'
 import http from 'http'
 import { Server } from 'socket.io';
 import Messages from './models/Messages.js'
+import routerToken from './routes/token.routes.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -75,6 +76,7 @@ app.use('/api', routerTest);
 app.use('/api', routerRegister);
 app.use('/api', routerLikes);
 app.use('/api', routerChats);
+app.use('/api', routerToken);
 app.use('/upload', express.static(uploadDir));
 
 const PORT = config.get('PORT') || 3000
@@ -100,7 +102,6 @@ app.get('/api',
         
     }
 )
-
 
 async function start() {
     try {

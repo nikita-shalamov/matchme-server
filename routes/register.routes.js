@@ -2,6 +2,7 @@ import { Router } from "express";
 import User from "../models/User.js";
 import Sex from "../models/Sex.js";
 import City from "../models/City.js";
+import authenticateToken from "../middleware/auth.middleware.js";
 
 
 const routerRegister = Router()
@@ -56,6 +57,7 @@ routerRegister.post(
 
 routerRegister.post(
     '/takeUserData',
+    authenticateToken,
     async (req, res) => {
         try {
             const { telegramId } = req.body;
