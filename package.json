@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^9.0.1",
     "@hookform/resolvers": "^3.9.0",
     "@socket.io/cluster-adapter": "^0.2.2",
     "axios": "^1.7.2",
@@ -32,6 +33,7 @@
     "node-telegram-bot-api": "^0.66.0",
     "nodemon": "^3.1.4",
     "prettyjson": "^1.2.5",
+    "random-js": "^2.1.0",
     "react-datepicker": "^7.3.0",
     "react-hook-form": "^7.52.2",
     "sharp": "^0.33.4",

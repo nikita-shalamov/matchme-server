@@ -3,59 +3,91 @@ import Likes from "../models/Likes.js";
 import User from "../models/User.js";
 import Rooms from "../models/Rooms.js";
 import Messages from "../models/Messages.js";
-
+import authenticateToken from "../middleware/auth.middleware.js";
+import Sex from "../models/Sex.js";
 
 
 const routerLikes = Router()
 
 routerLikes.post('/getUserProfiles', async (req, res) => {
-    const { telegramId, page = 1, pageSize = 5 } = req.body;
+    const { telegramId, filters, page = 1, pageSize = 3 } = req.body; // Устанавливаем pageSize по умолчанию на 3
     
     try {
-        console.log('try started');
-
         const user = await User.findOne({ telegramId });
         if (!user) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
         const userId = user._id;
-        
+
         const userSec = await User.findById(userId).populate('city');
         const userCityId = userSec.city._id;
-        // const userSexId = userSec.sex._id;
 
-        // Step 1: Get users from the same city
-        const usersFromCity = await User.find({ city: userCityId, _id: { $ne: userId } }).select('_id');
+        const selectedSex = await Sex.findOne({ name: filters.sex });
+        console.log(filters, filters.sex, selectedSex);
+        
+
+        const today = new Date();
+        const startDate = new Date(today.getFullYear() - filters.highAge, today.getMonth(), today.getDate());
+        const endDate = new Date(today.getFullYear() - filters.lowAge, today.getMonth(), today.getDate());
+
+        // Находим пользователей из города с заданными фильтрами
+        const usersFromCity = await User.find({
+            city: userCityId,
+            _id: { $ne: userId },
+            birthDate: { $gte: startDate, $lt: endDate },
+            ...(selectedSex?._id ? { sex: selectedSex._id } : {})
+        }).sort({ createdAt: -1 }); // Сортировка по дате создания, старые сначала
+        console.log(usersFromCity);
         
         const userIdsFromCity = usersFromCity.map(user => user._id.toString());
-        console.log('userIdsFromCity', userIdsFromCity);
-        
-    
-        // Step 2: Find users who have been liked by the current user
+
+        // Находим пользователей, которые были уже отмечены
         const likedUsers = await Likes.find({ fromUser: userId }).select('toUser');
         const likedUserIds = likedUsers.map(like => like.toUser.toString());
-        console.log('likedUserIds', likedUserIds);
-    
-        // Step 3: Filter out users who have been liked
-        const usersNotLiked = userIdsFromCity.filter(userId => !likedUserIds.includes(userId));
-        console.log('usersNotLiked', usersNotLiked);
 
-        // Step 4: Find user profiles of those who have not been liked
-        const users = await User.find({ _id: { $in: usersNotLiked } }).populate('sex', 'name').populate('city', 'name');
+        // Фильтруем пользователей, которые еще не были отмечены
+        const usersNotLiked = userIdsFromCity.filter(userId => !likedUserIds.includes(userId));
+
+        // Реализация пагинации
+        const skip = (page) * pageSize;
+        const users = await User.find({ _id: { $in: usersNotLiked } })
+            .populate('sex', 'name')
+            .populate('city', 'name')
+            .skip(skip)
+            .limit(pageSize);
+        users.sort((a, b) => b.createdAt - a.createdAt);
 
         res.status(200).json(users);
     } catch (error) {
-        console.error('Ошибка сервера:', error); // Выводим ошибку в консоль
+        console.error('Ошибка сервера:', error);
         res.status(500).json({ message: "Ошибка сервера", error });
     }
 });
 
 
+routerLikes.get('/getCountLikes/:telegramId', authenticateToken, async (req, res) => {
+    try {
+        const { telegramId } = req.params;
+
+        const user = await User.findOne({ telegramId }).select('name birthDate');
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        const likes = await Likes.find({ toUser: user._id, isMutual: false })
+
+        return res.status(200).json({ likesCounter: likes.length });
+    } catch (e) {
+        if (!res.headersSent) {
+            return res.status(500).json({ error: 'Ошибка сервера при получении количества лайков' });
+        }
+    }
+})
+
+
 routerLikes.post('/addLike', async (req, res) => {
     const fromUser = req.body.fromUser
     const toUser = req.body.toUser
-
-    console.log(req.body);
 
     const fromUserData = await User.findOne({telegramId: fromUser})
     if (!fromUserData) {
@@ -92,7 +124,6 @@ routerLikes.post('/addDislike', async (req, res) => {
     const fromUser = req.body.fromUser
     const toUser = req.body.toUser
 
-    console.log(req.body);
 
     const fromUserData = await User.findOne({telegramId: fromUser})
     if (!fromUserData) {

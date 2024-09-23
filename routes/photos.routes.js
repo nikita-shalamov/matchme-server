@@ -11,6 +11,7 @@ import axios from 'axios';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
 import imageminPngquant from 'imagemin-pngquant';
+import authenticateToken from '../middleware/auth.middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,7 +54,7 @@ const upload = multer({
 });
 
 // Маршрут для загрузки и обновления фотографий
-routerPhoto.post('/upload', upload.array('photos', 10), async (req, res) => {
+routerPhoto.post('/upload', upload.array('photos', 10), authenticateToken, async (req, res) => {
   try {
     const telegramId = req.body.telegramId;
 
@@ -116,7 +117,7 @@ routerPhoto.post('/upload', upload.array('photos', 10), async (req, res) => {
 
 
 // получение фотографий пользователя
-routerPhoto.post('/userPhotos', async (req, res) => {
+routerPhoto.post('/userPhotos', authenticateToken, async (req, res) => {
  	try {
 		const userId = req.body.telegramId;
 		const user = await User.findOne({ telegramId: userId }).exec();
@@ -136,6 +137,7 @@ routerPhoto.post('/userPhotos', async (req, res) => {
 
 routerPhoto.post(
   '/userPhotoTelegram',
+  authenticateToken,
   async (req, res) => {
     try {
 		const token = config.get('TOKEN')

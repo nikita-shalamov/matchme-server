@@ -10,6 +10,7 @@ const routerRegister = Router()
 
 routerRegister.post(
     '/pushUserData',
+    authenticateToken,
     async (req, res) => {
         const {telegramId, name, birthDate, sex, city, description, photos = [], interests} = req.body
 
@@ -92,6 +93,7 @@ routerRegister.post(
 
 routerRegister.post(
     '/changeUserData',
+    authenticateToken,
     async (req, res) => {
         try {
             const { updateData } = req.body;            
@@ -112,7 +114,7 @@ routerRegister.post(
     }
 )
 
-routerRegister.get('/getUserId/:telegramId', async (req, res) => {
+routerRegister.get('/getUserId/:telegramId', authenticateToken, async (req, res) => {
     try {
         const {telegramId} = req.params
         

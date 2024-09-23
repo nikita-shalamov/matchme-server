@@ -14,7 +14,6 @@ const parentDir = dirname(__dirname);
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join(parentDir, '/uploads')); // Папка для хранения загруженных файлов
-        console.log('parentDir', parentDir);
         
     },
     filename: (req, file, cb) => {
@@ -44,7 +43,6 @@ routerTest.post('/uploadPhotos', upload.array('files', 10), (req, res) => { // A
 routerTest.get('/download/:filename', (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(parentDir, 'uploads/', filename);
-    console.log(__dirname, filePath);
     res.sendFile(filePath);
 });
 

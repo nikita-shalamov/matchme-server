@@ -3,10 +3,11 @@ import Rooms from "../models/Rooms.js";
 import Messages from "../models/Messages.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
+import authenticateToken from "../middleware/auth.middleware.js";
 
 const routerChats = Router()
 
-routerChats.get('/getMessages/:roomId', async (req, res) => {
+routerChats.get('/getMessages/:roomId', authenticateToken, async (req, res) => {
     try {
         const roomId = new mongoose.Types.ObjectId(req.params.roomId)
         
@@ -18,7 +19,9 @@ routerChats.get('/getMessages/:roomId', async (req, res) => {
     }
 })
 
-routerChats.post('/addMessage', async (req, res) => {
+
+
+routerChats.post('/addMessage', authenticateToken, async (req, res) => {
     try {
         const { room, user, content, timestamp } = req.body;
 
@@ -68,7 +71,33 @@ routerChats.post('/checkRoom', async (req, res) => {
     }
 })
 
-routerChats.get('/getChats/:userId', async (req, res) => {
+routerChats.get('/getCountUnreadChats/:telegramId', authenticateToken, async (req, res) => {
+    try {
+        const {telegramId} = req.params        
+
+        const user = await User.findOne({telegramId})
+
+        const rooms = await Rooms.find({$or: [{firstUser: user._id}, {secondUser: user._id}]})
+
+        let unReadMessagesCounter = 0;        
+
+        for (const element of rooms) {
+            const messages = await Messages.find({ room: element._id });
+            const unReadMessages = messages.filter((msg) => {
+                return msg.user !== Number(telegramId) && !msg.isRead;
+            });
+            if (unReadMessages.length > 0) {
+                unReadMessagesCounter++;
+            }
+        }
+
+        res.status(200).json({unReadCounter: unReadMessagesCounter})
+    } catch (e) {
+        res.status(500).send('Ошибка при получении количества сообщений')
+    }
+})
+
+routerChats.get('/getChats/:userId', authenticateToken, async (req, res) => {
     try {
         const {userId} = req.params
 
@@ -104,7 +133,7 @@ routerChats.get('/getChats/:userId', async (req, res) => {
                     id: anotherUser._id,
                     name: anotherUser.name,
                     telegramId: anotherUser.telegramId,
-                    photos: anotherUser.photos[0]
+                    photos: `http://localhost:3000/upload/${anotherUser.photos[0]}`
                 },
                 lastMessage: lastMessage,
                 unReadMessages: unReadMessages.length
