@@ -45,17 +45,13 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
-
     // подключение к комнате
     socket.on('joinRoom', (room) => {
         socket.join(room);
-        console.log(`User joined room: ${room}`);
     });
 
     // сообщение отправляем в комнату определенную
     socket.on('message', ({ room, message, user, timestamp, isRead}) => {
-        console.log(`Получено сообщение: ${message} в комнате: ${room}`);
         io.to(room).emit('message', { room, message, user, timestamp, isRead });
     });
 
@@ -128,6 +124,26 @@ async function addCitiesToDB() {
         console.error('Ошибка при добавлении городов в базу данных:', error);
     }
 }
+
+
+
+
+async function start() {
+    try {
+        await mongoose.connect(config.get('Uri')).then(() => {
+            console.log('Connected to MongoDB');
+        })
+
+        server.listen(PORT, () => {
+            console.log(`Server started on ${PORT} port`);
+        })
+    } catch (e) {
+        console.log('server fail: ', e.message);
+        process.exit(1);
+    }
+}
+
+start()
 
 // addCitiesToDB();
 
@@ -288,21 +304,3 @@ async function addCitiesToDB() {
 //         </html>
 //     `);
 // });
-
-
-async function start() {
-    try {
-        await mongoose.connect(config.get('Uri')).then(() => {
-            console.log('Connected to MongoDB');
-        })
-
-        server.listen(PORT, () => {
-            console.log(`Server started on ${PORT} port`);
-        })
-    } catch (e) {
-        console.log('server fail: ', e.message);
-        process.exit(1);
-    }
-}
-
-start()

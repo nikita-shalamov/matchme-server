@@ -151,8 +151,13 @@ routerChats.post('/markMessagesAsRead/:roomId', async (req, res) => {
     const { roomId } = req.params;
     const { userId } = req.body;
 
+    console.log(roomId, userId);
+
     try {
         await Messages.updateMany({ room: roomId, user: { $ne: userId }, isRead: false }, { isRead: true });
+        const messages = await Messages.find({ room: roomId, user: { $ne: userId }, isRead: false });
+        console.log(messages);
+        
         res.status(200).json({ message: 'Сообщения отмечены как прочитанные' });
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при отметке сообщений о прочтении' });

@@ -22,9 +22,7 @@ routerLikes.post('/getUserProfiles', async (req, res) => {
         const userSec = await User.findById(userId).populate('city');
         const userCityId = userSec.city._id;
 
-        const selectedSex = await Sex.findOne({ name: filters.sex });
-        console.log(filters, filters.sex, selectedSex);
-        
+        const selectedSex = await Sex.findOne({ name: filters.sex });        
 
         const today = new Date();
         const startDate = new Date(today.getFullYear() - filters.highAge, today.getMonth(), today.getDate());
@@ -37,7 +35,6 @@ routerLikes.post('/getUserProfiles', async (req, res) => {
             birthDate: { $gte: startDate, $lt: endDate },
             ...(selectedSex?._id ? { sex: selectedSex._id } : {})
         }).sort({ createdAt: -1 }); // Сортировка по дате создания, старые сначала
-        console.log(usersFromCity);
         
         const userIdsFromCity = usersFromCity.map(user => user._id.toString());
 
