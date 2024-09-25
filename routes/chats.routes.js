@@ -133,7 +133,7 @@ routerChats.get('/getChats/:userId', authenticateToken, async (req, res) => {
                     id: anotherUser._id,
                     name: anotherUser.name,
                     telegramId: anotherUser.telegramId,
-                    photos: `http://localhost:3000/upload/${anotherUser.photos[0]}`
+                    photos: `https://shalamov-nikita.ru/upload/${anotherUser.photos[0]}`
                 },
                 lastMessage: lastMessage,
                 unReadMessages: unReadMessages.length
