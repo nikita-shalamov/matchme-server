@@ -80,7 +80,7 @@ app.use('/api', routerRegister);
 app.use('/api', routerLikes);
 app.use('/api', routerChats);
 app.use('/api', routerToken);
-app.use('/upload', express.static(uploadDir));
+app.use('/api/upload', express.static(uploadDir));
 
 const PORT = config.get('PORT') || 3000
 
